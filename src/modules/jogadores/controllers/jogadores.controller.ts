@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPi
 
 import { JogadoresService } from '../services/jogadores.service';
 
-import { JogadoresValidacaoParametrosPipe } from '../pipes/jogadores-validacao-parametros.pipe';
+import { ValidacaoParametrosPipe } from '../../../common/pipes/validacao-parametros.pipe';
 
 import { Jogador } from '../interfaces/jogador.interface';
 
@@ -19,7 +19,7 @@ export class JogadoresController {
     }
 
     @Get('/:_id') 
-    async consultarJogadorPorId(@Param('_id', JogadoresValidacaoParametrosPipe) _id: string): Promise<Jogador> {
+    async consultarJogadorPorId(@Param('_id', ValidacaoParametrosPipe) _id: string): Promise<Jogador> {
         return this.jogadoresService.consultarJogadorPorId(_id);
     }
 
@@ -32,13 +32,13 @@ export class JogadoresController {
     @Put('/:_id')
     @UsePipes(ValidationPipe)
     async atualizarJogador(
-        @Param('_id', JogadoresValidacaoParametrosPipe) _id: string, 
+        @Param('_id', ValidacaoParametrosPipe) _id: string, 
         @Body() atualizarJogadorDto: AtualizarJogadorDto): Promise<void> {
         await this.jogadoresService.atualizarJogador(_id, atualizarJogadorDto);
     }
 
     @Delete('/:_id')
-    async deletarJogador(@Param('_id', JogadoresValidacaoParametrosPipe) _id: string): Promise<void> {
+    async deletarJogador(@Param('_id', ValidacaoParametrosPipe) _id: string): Promise<void> {
         await this.jogadoresService.deletarJogador(_id);
     }
 }
