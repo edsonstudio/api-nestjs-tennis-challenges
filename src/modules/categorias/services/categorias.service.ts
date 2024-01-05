@@ -22,6 +22,10 @@ export class CategoriasService {
             .exec();
     }
 
+    async consultarCategoriaDoJogador(idJogador: any): Promise<Categoria> {
+        return await this.categoriaModel.findOne().where('jogadores').in(idJogador).exec();
+    }
+
     async consultarCategoriaPorId(categoria: string): Promise<Categoria> {
         return await this.categoriaEncontrada(categoria);
     }
@@ -51,8 +55,8 @@ export class CategoriasService {
         const categoriaValida = await this.categoriaEncontrada(categoria);
         const jogadorValido = await this.jogadoresService.jogadorEncontrado(idJogador);
 
-        const jogadorJaCadastradoCategoria = await this.categoriaModel.
-            find({ categoria })
+        const jogadorJaCadastradoCategoria = await this.categoriaModel
+            .find({ categoria })
             .where('jogadores')
             .in(idJogador)
             .exec();

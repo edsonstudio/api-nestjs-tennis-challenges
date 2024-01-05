@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
@@ -18,21 +18,17 @@ export class DesafiosService {
     constructor(
         @InjectModel('Desafio') private readonly desafioModel: Model<Desafio>,
         private readonly jogadoresService: JogadoresService,
-        private readonly categoriaService: CategoriasService,
+        private readonly categoriaService: CategoriasService
     ) { }
+
+    private readonly logger = new Logger(DesafiosService.name);
 
     // TODO: Criar os metodos consultarDesafiosDeUmJogador e consultarTodosDesafios;
 
     async criarDesafio(criarDesafioDto: CriarDesafioDto): Promise<Desafio> {
         await this.validarJogadores(criarDesafioDto);
-
-        const categorias = await this.categoriaService.consultarCategorias();
-
-        const categoriaSolicitante = categorias.find((categoria) =>
-            categoria.jogadores.some((jogador) =>
-                jogador._id == criarDesafioDto.solicitante._id
-            )
-        );
+    
+        const categoriaSolicitante = await this.categoriaService.consultarCategoriaDoJogador(criarDesafioDto.solicitante._id);
 
         if (!categoriaSolicitante) {
             throw new BadRequestException('O jogador solicitante não está registrado em uma Categoria!');

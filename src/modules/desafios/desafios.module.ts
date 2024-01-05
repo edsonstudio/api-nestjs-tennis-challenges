@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { DesafioSchema } from './schemas/desafio.schema';
 
-import { DesafioController } from './controller/desafio.controller';
+import { DesafiosController } from './controller/desafio.controller';
 
 import { DesafiosService } from './services/desafios.service';
 
@@ -18,7 +18,7 @@ import { DesafiosService } from './services/desafios.service';
             { name: 'Desafio', schema: DesafioSchema }
         ])
     ],
-    controllers: [DesafioController],
+    controllers: [DesafiosController],
     providers: [DesafiosService]
 })
 export class DesafiosModule {}
