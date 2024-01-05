@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
@@ -9,6 +9,7 @@ import { Desafio } from "../interfaces/desafio.interface";
 import { Jogador } from "src/modules/jogadores/interfaces/jogador.interface";
 
 import { CriarDesafioDto } from "../dtos/criar-desafio.dto";
+import { AtualizarDesafioDto } from "../dtos/atualizar-desafio.dto";
 
 import { DesafioStatusEnum } from "../enums/desafio-status.enum";
 
@@ -23,11 +24,30 @@ export class DesafiosService {
 
     private readonly logger = new Logger(DesafiosService.name);
 
-    // TODO: Criar os metodos consultarDesafiosDeUmJogador e consultarTodosDesafios;
+    async consultarTodosDesafios(): Promise<Array<Desafio>> {
+        return await this.desafioModel
+            .find()
+            .populate('solicitante')
+            .populate('jogadores')
+            .populate('partida')
+            .exec();
+    }
+
+    async consultarDesafiosDeUmJogador(_id: any): Promise<Array<Desafio>> {
+        await this.jogadoresService.consultarJogadorPorId(_id);
+        return await this.desafioModel
+            .find()
+            .where('jogadores')
+            .in(_id)
+            .populate('solicitante')
+            .populate('jogadores')
+            .populate('partida')
+            .exec();
+    }
 
     async criarDesafio(criarDesafioDto: CriarDesafioDto): Promise<Desafio> {
         await this.validarJogadores(criarDesafioDto);
-    
+
         const categoriaSolicitante = await this.categoriaService.consultarCategoriaDoJogador(criarDesafioDto.solicitante._id);
 
         if (!categoriaSolicitante) {
@@ -40,6 +60,18 @@ export class DesafiosService {
         desafioCriado.status = DesafioStatusEnum.PENDENTE;
 
         return await desafioCriado.save();
+    }
+
+    async atualizarDesafio(_id: string, atualizarDesafioDto: AtualizarDesafioDto): Promise<void> {
+        const desafioValido = await this.desafioEncontrado(_id);
+
+        if (atualizarDesafioDto.status) {
+            desafioValido.dataHoraResposta = new Date();
+        }
+
+        desafioValido.status = atualizarDesafioDto.status;
+        desafioValido.dataHoraDesafio = atualizarDesafioDto.dataHoraDesafio;
+        await this.desafioModel.findOneAndUpdate({ _id }, { $set: desafioValido }).exec();
     }
 
     private async validarJogadores(criarDesafioDto: CriarDesafioDto): Promise<void> {
@@ -87,5 +119,15 @@ export class DesafiosService {
     private async gerarChaveUnica(jogador: Jogador): Promise<string> {
         const { _id, telefoneCelular, email, nome, ranking, posicaoRanking, urlFotoJogador } = jogador;
         return `${_id}-${telefoneCelular}-${email}-${nome}-${ranking}-${posicaoRanking}-${urlFotoJogador}`;
+    }
+
+    public async desafioEncontrado(_id: string): Promise<Desafio> {
+        const desafioValido = await this.desafioModel.findById(_id).exec();
+
+        if (!desafioValido) {
+            throw new NotFoundException(`O Desafio de ID: '${_id}' não foi encontrado!`);
+        }
+
+        return desafioValido;
     }
 }
