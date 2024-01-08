@@ -74,6 +74,13 @@ export class DesafiosService {
         await this.desafioModel.findOneAndUpdate({ _id }, { $set: desafioValido }).exec();
     }
 
+    // Exclusão lógica
+    async deletarDesafio(_id: string): Promise<void> {
+        const desafioValido = await this.desafioEncontrado(_id);
+        desafioValido.status = DesafioStatusEnum.CANCELADO;
+        await this.desafioModel.findOneAndUpdate({ _id }, { $set: desafioValido }).exec();
+    }
+
     private async validarJogadores(criarDesafioDto: CriarDesafioDto): Promise<void> {
         await this.jogadoresService.jogadorEncontrado(criarDesafioDto.solicitante._id);
 
