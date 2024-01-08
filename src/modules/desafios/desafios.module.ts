@@ -19,6 +19,7 @@ import { DesafiosService } from './services/desafios.service';
         ])
     ],
     controllers: [DesafiosController],
-    providers: [DesafiosService]
+    providers: [DesafiosService],
+    exports: [DesafiosService]
 })
 export class DesafiosModule {}
